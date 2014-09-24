@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 #user new_drupal_app.rb CLIENT INSTANCE_NAME FILES
 #will create and prepare directory tree that is relative to where the command
 #was run that looks like 
@@ -6,11 +6,13 @@
 # files with be chowned to the php user
 # will also create an output new database details
 # will create new branch and deployment role and branch in beanstalk
-require_relative "settings"
+require "settings"
+puts options;
+exit
 require 'optparse'
 
 parser = OptionParser.new do|opts|
-	opts.banner = "new_drupal_app.rb [options]"
+  opts.banner = "new_drupal_app.rb [options]. all settings can be preset in a file called settings.rb"
 	opts.on('-c' ,'--client client', "client value should match beanstalk project name") do |client|
 		options[:client] = client;
 	end
@@ -21,10 +23,15 @@ parser = OptionParser.new do|opts|
 	opts.on('-f', '--files path', 'path to drupal files dir') do |files|
 		options[:files] = files;
 	end 
-	opts.on('-p', '--php php_version', 'can be "5.3", "5.4", "5.5". Defaults ot 5.4') do |ver|
+	opts.on('-p', '--php_version php_version', 'can be "5.3", "5.4", "5.5". Defaults ot 5.4') do |ver|
 		options[:php_version] = ver;
 	end
-  opts.on( "-o", "--owner appowner", "the unix level owner that the application will live under, can be hard set in the settings") do |opt| 
+  opts.on( "-u", "--php_user",
+           "the user that php runs as") do |opt|
+    
+    options[:php_user] = opt
+  end
+  opts.on( "-o", "--owner app owner", "the unix level owner that the application will live under, can be hard set in the settings") do |opt| 
     options[:app_owner] = opt;
   end
 	opts.on('-h', '--help', 'Displays help') do
