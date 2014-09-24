@@ -6,6 +6,7 @@
 # files with be chowned to the php user
 # will also create an output new database details
 # will create new branch and deployment role and branch in beanstalk
+require_relative "settings"
 require 'optparse'
 
 options = {:client => nil, :instance => 'dev', :files => 'sites/default/files', :php_version => '5.4'}
@@ -24,6 +25,9 @@ parser = OptionParser.new do|opts|
 	opts.on('-p', '--php php_version', 'can be "5.3", "5.4", "5.5". Defaults ot 5.4') do |ver|
 		options[:php_version] = ver;
 	end
+  opts.on( "-o", "--owner appowner", "the unix level owner that the application will live under, can be hard set in the settings") do |opt| 
+    settings[:app_owner] = opt;
+  end
 	opts.on('-h', '--help', 'Displays help') do
 		puts opts
 		exit
@@ -39,6 +43,9 @@ end
 ## making directories
 require 'fileutils'
 FileUtils.mkdir_p options[:client] + '/' + options[:instance] +'/' + options[:files]
+FileUtils.chown settings[:app_owner], settings[:app_owner], options[:client]
+FileUtils.chown_R settings[:app_owner], settings[:app_owner], options[:client] + '/' + options[:instance]
+FileUtils.chown_R settings[:php_user], settings[:app_owner], options[:client] + '/' + options[:instance] +'/' + options[:files]
 
 # makeing mysql info
 
