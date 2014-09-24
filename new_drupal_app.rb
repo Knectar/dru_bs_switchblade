@@ -32,13 +32,13 @@ end
 
 parser.parse!
 if options[:client] == nil
-	print 'you need to at least enter a clent name: '
-	options[:clent] = gets.chomp
+	print 'you need to at least enter a client name: '
+	options[:client] = gets.chomp
 end
 
 ## making directories
 require 'fileutils'
-#FileUtils.mkdir_p
+FileUtils.mkdir_p options[:client] + '/' + options[:instance] +'/' + options[:files]
 
 # makeing mysql info
 
