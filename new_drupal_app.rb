@@ -68,9 +68,14 @@ require 'fileutils'
 FileUtils.mkdir_p options[:client] + '/' + options[:instance] +'/' + options[:files]
 FileUtils.chown options[:app_owner], options[:app_owner], options[:client]
 FileUtils.chown_R options[:app_owner], options[:app_owner], options[:client] + '/' + options[:instance]
-FileUtils.chown_R options[:php_user], options[:app_owner], options[:client] + '/' + options[:instance] +'/' + options[:files]
+
+if FileUtils.chown_R options[:php_user], options[:app_owner], options[:client] + '/' + options[:instance] +'/' + options[:files] = FALSE
+  print "need sudo access"
+  exit
+end
 
 # making MySQL info
+exit
 require 'mysql'
 print "what is the mysql " + options[:mysql_user] + "'s password?"
 sql_password = gets.chomp
