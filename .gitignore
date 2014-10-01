@@ -6,3 +6,4 @@
 Gemfile.lock
 tmp
 vendor
+.env
