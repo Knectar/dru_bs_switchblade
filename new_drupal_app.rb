@@ -10,6 +10,8 @@
 #require 'bundler'
 #Bundler.require
 
+require 'mysql'
+require 'securerandom'
 require 'dotenv'
 Dotenv.load
 
@@ -68,23 +70,28 @@ require 'fileutils'
 FileUtils.mkdir_p options[:client] + '/' + options[:instance] +'/' + options[:files]
 FileUtils.chown options[:app_owner], options[:app_owner], options[:client]
 FileUtils.chown_R options[:app_owner], options[:app_owner], options[:client] + '/' + options[:instance]
-
-if FileUtils.chown_R options[:php_user], options[:app_owner], options[:client] + '/' + options[:instance] +'/' + options[:files] = FALSE
-  print "need sudo access"
-  exit
-end
+FileUtils.chown_R options[:php_user], options[:app_owner], options[:client] + '/' + options[:instance] +'/' + options[:files] 
+puts "File system prepared"
 
 # making MySQL info
-exit
-require 'mysql'
+
+created = Mysql.real_connect('localhost', new_db, random_password, new_db)
+while created == 0
+random_password = SecureRandom.hex(20)
 print "what is the mysql " + options[:mysql_user] + "'s password?"
 sql_password = gets.chomp
 new_db = options[:client] + '_' + options[:instance]
 
-root_connect = mysql.real_connect("localhost", options[:mysql_user], sql_password)
+root_connect = Mysql.real_connect("localhost", options[:mysql_user], sql_password)
 root_connect.create_database(new_db)
-
+root_connect.query("CREATE USER ' #{new_db}'' @ 'localhost' IDENTIFIED BY '#{random_password}'")
+root_connect.query("GRANT ALL ON #{new_db}.* TO '#{new_db}'@'localhost'")
 root_connect.close
+end
+created.close
+puts "created database: #{new_db}"
+puts "creates user: #{new_db}"
+puts "password: #{random_password}"
 
 
 # setting up new role and pulling from beanstalk
