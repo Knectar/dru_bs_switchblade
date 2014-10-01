@@ -7,8 +7,8 @@
 # will also create an output new database details
 # will create new branch and deployment role and branch in beanstalk
 
-require 'bundler'
-Bundler.require
+#require 'bundler'
+#Bundler.require
 
 require 'dotenv'
 Dotenv.load
@@ -48,6 +48,7 @@ parser = OptionParser.new do|opts|
   end
   opts.on( "-O", "--options",
           "Output all settings") do
+    require 'yaml'
     puts YAML::dump(options)
   end
   opts.on('-h', '--help', 'Displays help') do
