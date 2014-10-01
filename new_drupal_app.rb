@@ -25,25 +25,25 @@ require 'optparse'
 
 
 parser = OptionParser.new do|opts|
-  opts.banner = "new_drupal_app.rb [options]. all settings can be preset in a file called settings.rb"
-  opts.on('-c' ,'--client client', "client value should match beanstalk project name") do |client|
+  opts.banner = "new_drupal_app.rb [options]. All settings can be preset in a file called settings.rb"
+  opts.on('-c' ,'--client client', "Client value should match beanstalk project name") do |client|
     options[:client] = client;
   end
 
-  opts.on('-i', '--instance instance', "the applications instance name. defualts to dev. \n If it is other than stage or dev it the url will be INSTANCE-CLIENT.dev.knectar.com") do |instance|
+  opts.on('-i', '--instance instance', "The applications instance name. Defaults to 'dev'. If it is other than stage or dev it the URL will be INSTANCE-CLIENT.dev.knectar.com") do |instance|
     options[:instance] = instance;
   end
-  opts.on('-f', '--files path', 'path to drupal files dir') do |files|
+  opts.on('-f', '--files path', 'Path to Drupal files directory') do |files|
     options[:files] = files;
   end 
-  opts.on('-p', '--php_version php_version', 'can be "5.3", "5.4", "5.5". Defaults ot 5.4') do |ver|
+  opts.on('-p', '--php_version php_version', 'can be "5.3", "5.4", "5.5". Defaults to 5.4') do |ver|
     options[:php_version] = ver;
   end
   opts.on( "-u", "--php_user",
           "the user that php runs as") do |opt|
     options[:php_user] = opt
   end
-  opts.on( "-o", "--owner app owner", "the unix level owner that the application will live under, can be hard set in the settings") do |opt| 
+  opts.on( "-o", "--owner app owner", "The UNIX level owner that the application will live under, can be hard set in the settings") do |opt| 
     options[:app_owner] = opt;
   end
   opts.on( "-O", "--options",
@@ -70,6 +70,16 @@ FileUtils.chown options[:app_owner], options[:app_owner], options[:client]
 FileUtils.chown_R options[:app_owner], options[:app_owner], options[:client] + '/' + options[:instance]
 FileUtils.chown_R options[:php_user], options[:app_owner], options[:client] + '/' + options[:instance] +'/' + options[:files]
 
-# makeing mysql info
+# making MySQL info
+require 'mysql'
+print "what is the mysql " + options[:mysql_user] + "'s password?"
+sql_password = gets.chomp
+new_db = options[:client] + '_' + options[:instance]
+
+root_connect = mysql.real_connect("localhost", options[:mysql_user], sql_password)
+root_connect.create_database(new_db)
+
+root_connect.close
+
 
 # setting up new role and pulling from beanstalk
