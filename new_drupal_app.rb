@@ -10,6 +10,7 @@
 #require 'bundler'
 #Bundler.require
 
+require 'rubygems'
 require 'mysql'
 require 'securerandom'
 require 'dotenv'
