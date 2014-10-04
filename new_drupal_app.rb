@@ -13,6 +13,10 @@
 require 'rubygems'
 require 'securerandom'
 require 'dotenv'
+require 'fileutils'
+require 'optparse'
+
+#load options from local file
 Dotenv.load
 
 options = {
@@ -28,10 +32,9 @@ options = {
 operations = {
   :mk_db => TRUE,
   :mk_file_system => TRUE,
-  :setup_bs => TRUE
+  :setup_bs => TRUE,
+  :create_vhost => TRUE
 }
-
-require 'optparse'
 
 parser = OptionParser.new do|opts|
   opts.banner = "new_drupal_app.rb [options]. All settings can be preset in a file called settings.rb"
@@ -64,6 +67,9 @@ parser = OptionParser.new do|opts|
   opts.on( "-B", "--on-beanstalk", "Do not create beanstalk environment.") do 
     operations[:setup_bs] = FALSE
   end
+  opts.on( "-V", "--no-vhost no-vhost", "Do not create an Nginx virtual host for this application instance.") do
+    operations[:create_vhost] = FALSE
+  end
   opts.on( "-O", "--options",
           "Output all settings") do
     require 'yaml'
@@ -81,9 +87,7 @@ if options[:client] == nil
   options[:client] = gets.chomp
 end
 
-## making directories
 def mk_file_system(options, app_template ='drupal')
-  require 'fileutils'
   FileUtils.mkdir_p options[:client] + '/' + options[:instance] +'/' + options[:files]
   FileUtils.chown options[:app_owner], options[:app_owner], options[:client]
   FileUtils.chown_R options[:app_owner], options[:app_owner], options[:client] + '/' + options[:instance]
@@ -118,8 +122,14 @@ def mk_db(options)
   # created = Mysql.real_connect('localhost', new_db, random_password, new_db)
   # created.close
   puts "created database: #{new_db}"
-  puts "creates user:     #{new_db}"
+  puts "created user:     #{new_db}"
   puts "password:         #{random_password}"
+end
+
+class Nginx
+  def mk_vhost(options)
+
+  end
 end
 
 # setting up new role and pulling from beanstalk
@@ -139,4 +149,8 @@ end
 
 if operations[:mk_db]
   mk_db(options)
+end
+
+if operations[:mk_vhost]
+  Nginx.mk_vhost(options)
 end
