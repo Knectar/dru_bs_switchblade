@@ -11,7 +11,6 @@
 #Bundler.require
 
 require 'rubygems'
-require 'mysql'
 require 'securerandom'
 require 'dotenv'
 Dotenv.load
@@ -99,24 +98,28 @@ end
 
 def mk_db(options)
   # making MySQL info
-
+  require "sequel"
   random_password = SecureRandom.hex(20)
   new_db = options[:client] + '_' + options[:instance]
-  created = Mysql.real_connect('localhost', new_db, random_password, new_db)
-  while created == 0
-    print "what is the mysql " + options[:mysql_user] + "'s password?"
-    sql_password = gets.chomp
+  print "what is the mysql " + options[:mysql_user] + "'s password? "
+  sql_password = gets.chomp
 
-    root_connect = Mysql.real_connect("localhost", options[:mysql_user], sql_password)
-    root_connect.create_database(new_db)
-    root_connect.query("CREATE USER ' #{new_db}'' @ 'localhost' IDENTIFIED BY '#{random_password}'")
-    root_connect.query("GRANT ALL ON #{new_db}.* TO '#{new_db}'@'localhost'")
-    root_connect.close
+  puts "you entered : #{sql_password}"
+  root_connect = Sequel.connect("mysql://#{options[:mysql_user]}:#{sql_password}@localhost")
+  begin
+    root_connect.use(new_db)
+  rescue 
+    root_connect.run("CREATE DATABASE #{new_db};")
+    root_connect.run("GRANT USAGE ON '#{new_db}'.* TO '#{new_db}' @ 'localhost' IDENTIFIED BY '#{random_password}'")
+    root_connect.run("GRANT ALL ON #{new_db}.* TO '#{new_db}'@'localhost'")
   end
-  created.close
+
+  root_connect.disconnect
+  # created = Mysql.real_connect('localhost', new_db, random_password, new_db)
+  # created.close
   puts "created database: #{new_db}"
-  puts "creates user: #{new_db}"
-  puts "password: #{random_password}"
+  puts "creates user:     #{new_db}"
+  puts "password:         #{random_password}"
 end
 
 # setting up new role and pulling from beanstalk
