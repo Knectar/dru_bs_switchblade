@@ -27,8 +27,8 @@ options = {
 }
 
 operations = {
-  :create_db => TRUE,
-  :create_files => TRUE,
+  :mk_db => TRUE,
+  :mk_file_system => TRUE,
   :setup_bs => TRUE
 }
 
@@ -88,7 +88,12 @@ def mk_file_system(options, app_template ='drupal')
   FileUtils.mkdir_p options[:client] + '/' + options[:instance] +'/' + options[:files]
   FileUtils.chown options[:app_owner], options[:app_owner], options[:client]
   FileUtils.chown_R options[:app_owner], options[:app_owner], options[:client] + '/' + options[:instance]
-  FileUtils.chown_R options[:php_user], options[:app_owner], options[:client] + '/' + options[:instance] +'/' + options[:files] 
+  begin
+    FileUtils.chown_R options[:php_user], options[:app_owner], options[:client] + '/' + options[:instance] +'/' + options[:files] 
+  rescue
+    puts "Can not change 'files' directory owner to #{options[:php_user]}.\n Please enter sudoers password:"
+    system("sudo chown -R #{options[:php_user]}:#{options[:app_owner]} #{options[:client]}/#{options[:instance]}/#{options[:files]}")
+  end
   puts "File system prepared"
 end
 
@@ -116,7 +121,7 @@ end
 
 # setting up new role and pulling from beanstalk
 class Bs
-  require "beanstalkapp"
+  #require "beanstalkapp"
   def new_branch(options)
   end
   def new_role(options)
@@ -125,7 +130,7 @@ class Bs
   end
 end
 
-if operations[:mk_file_system]
+if operations[:mk_file_system] == true
   mk_file_system(options)
 end  
 
