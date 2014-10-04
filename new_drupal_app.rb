@@ -99,3 +99,12 @@ def mk_db(options)
 end
 
 # setting up new role and pulling from beanstalk
+class Bs
+  require "beanstalkapp"
+  def new_branch(options)
+  end
+  def new_role(options)
+  end
+  def new_server(options)
+  end
+end
