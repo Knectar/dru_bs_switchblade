@@ -23,7 +23,10 @@ options = {
   :php_version => ENV['php_version'],
   :php_user => ENV['php_user'],
   :app_owner => ENV['app_owner'],
-  :mysql_user => ENV['mysql_user'],
+  :mysql_user => ENV['mysql_user']
+}
+
+operations = {
   :create_db => TRUE,
   :create_files => TRUE,
   :setup_bs => TRUE
@@ -54,13 +57,13 @@ parser = OptionParser.new do|opts|
     options[:app_owner] = opt;
   end
   opts.on( "-M", "--no-db no-db", "Do not create database") do
-    options[:create_db] = FALSE
+    operations[:mk_db] = FALSE
   end
   opts.on( "-F", "--no-directory no-directory", "Do not create directory structure") do
-    options[:create_files] = FALSE
+    operations[:mk_file_system] = FALSE
   end
   opts.on( "-B", "--on-beanstalk", "Do not create beanstalk environment.") do 
-    options[:setup_bs] = FALSE
+    operations[:setup_bs] = FALSE
   end
   opts.on( "-O", "--options",
           "Output all settings") do
@@ -80,7 +83,7 @@ if options[:client] == nil
 end
 
 ## making directories
-def mk_drufile_system(options)
+def mk_file_system(options, app_template ='drupal')
   require 'fileutils'
   FileUtils.mkdir_p options[:client] + '/' + options[:instance] +'/' + options[:files]
   FileUtils.chown options[:app_owner], options[:app_owner], options[:client]
@@ -120,4 +123,12 @@ class Bs
   end
   def new_server(options)
   end
+end
+
+if operations[:mk_file_system]
+  mk_file_system(options)
+end  
+
+if operations[:mk_db]
+  mk_db(options)
 end
