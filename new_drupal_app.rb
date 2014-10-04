@@ -16,16 +16,20 @@ require 'securerandom'
 require 'dotenv'
 Dotenv.load
 
-options = {:client => nil,
-           :instance => ENV['instance'],
-           :files => ENV['files'],
-           :php_version => ENV['php_version'],
-           :php_user => ENV['php_user'],
-           :app_owner => ENV['app_owner'],
-           :mysql_user => ENV['mysql_user']
+options = {
+  :client => nil,
+  :instance => ENV['instance'],
+  :files => ENV['files'],
+  :php_version => ENV['php_version'],
+  :php_user => ENV['php_user'],
+  :app_owner => ENV['app_owner'],
+  :mysql_user => ENV['mysql_user'],
+  :create_db => TRUE,
+  :create_files => TRUE,
+  :setup_bs => TRUE
 }
-require 'optparse'
 
+require 'optparse'
 
 parser = OptionParser.new do|opts|
   opts.banner = "new_drupal_app.rb [options]. All settings can be preset in a file called settings.rb"
@@ -48,6 +52,15 @@ parser = OptionParser.new do|opts|
   end
   opts.on( "-o", "--owner app owner", "The UNIX level owner that the application will live under, can be hard set in the settings") do |opt| 
     options[:app_owner] = opt;
+  end
+  opts.on( "-M", "--no-db no-db", "Do not create database") do
+    options[:create_db] = FALSE
+  end
+  opts.on( "-F", "--no-directory no-directory", "Do not create directory structure") do
+    options[:create_files] = FALSE
+  end
+  opts.on( "-B", "--on-beanstalk", "Do not create beanstalk environment.") do 
+    options[:setup_bs] = FALSE
   end
   opts.on( "-O", "--options",
           "Output all settings") do
