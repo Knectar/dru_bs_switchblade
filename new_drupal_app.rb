@@ -26,7 +26,8 @@ options = {
   :php_version => ENV['php_version'],
   :php_user => ENV['php_user'],
   :app_owner => ENV['app_owner'],
-  :mysql_user => ENV['mysql_user']
+  :mysql_user => ENV['mysql_user'],
+  :private_files => ENV["private_files"]
 }
 
 operations = {
@@ -39,15 +40,17 @@ operations = {
 parser = OptionParser.new do|opts|
   opts.banner = "new_drupal_app.rb [options]. All settings can be preset in a file called settings.rb"
   opts.on('-c' ,'--client client', "Client value should match beanstalk project name") do |client|
-    options[:client] = client;
+    options[:client] = client
   end
-
   opts.on('-i', '--instance instance', "The applications instance name. Defaults to 'dev'. If it is other than stage or dev it the URL will be INSTANCE-CLIENT.dev.knectar.com") do |instance|
-    options[:instance] = instance;
+    options[:instance] = instance
   end
   opts.on('-f', '--files path', 'Path to Drupal files directory') do |files|
     options[:files] = files;
   end 
+  opts.on( "-r", "--private_files private_files", "The Drupal private files directory. Defaults to /sites/default/files/_private") do |opt|
+    options[:private_files]  = opt
+  end
   opts.on('-p', '--php_version php_version', 'can be "5.3", "5.4", "5.5". Defaults to 5.4') do |ver|
     options[:php_version] = ver;
   end
@@ -86,6 +89,7 @@ if options[:client] == nil
   print 'you need to at least enter a client name: '
   options[:client] = gets.chomp
 end
+
 
 def mk_file_system(options, app_template ='drupal')
   FileUtils.mkdir_p options[:client] + '/' + options[:instance] +'/' + options[:files]
@@ -128,7 +132,23 @@ end
 
 class Nginx
   def mk_vhost(options)
-
+    
+  end
+  def vhost_drupal(options)
+    if options[:instance] != "dev" || options[:instance] != "stage"
+      subdomain = "#{options[:instance]}-#{options[:client]}.dev"
+    else
+      subdomain = "#{options[:client]}.#{options[:instance]}"
+    end
+    return "server {
+  #the URL
+  server_name #{subdomain}.knectar.com;
+  #path to the local host
+  root /home/sites/#{options[:client]}/#{options[:instance]};
+  #include the app template
+  set $private_dir <%= @private_dir %>;
+  include /etc/nginx/apps/drupal;
+}"
   end
 end
 
