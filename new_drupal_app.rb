@@ -132,7 +132,7 @@ end
 
 class Nginx
   def mk_vhost(options)
-    
+       
   end
   def vhost_drupal(options)
     if options[:instance] != "dev" || options[:instance] != "stage"
@@ -140,13 +140,25 @@ class Nginx
     else
       subdomain = "#{options[:client]}.#{options[:instance]}"
     end
+    case options[:php_version]
+    when 5.3
+      php_socket = php_fpm
+    when 5.4
+      php_socket = php54_fpm
+    when 5.5
+      php_socket = php55_fpm
+    else 
+      puts "please enter 5.3, 5.4 or 5.5 other options will fail."
+      exit
+    end
     return "server {
   #the URL
   server_name #{subdomain}.knectar.com;
   #path to the local host
   root /home/sites/#{options[:client]}/#{options[:instance]};
   #include the app template
-  set $private_dir <%= @private_dir %>;
+  set $private_dir #{options[:private_files]};
+  set $php_socket #{php_socket} ;
   include /etc/nginx/apps/drupal;
 }"
   end
