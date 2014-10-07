@@ -92,9 +92,9 @@ end
 
 
 def mk_file_system(options, app_template ='drupal')
-  FileUtils.mkdir_p options[:client] + '/' + options[:instance] +'/' + options[:files]
+  FileUtils.mkdir_p "#{options[:client]}/#{options[:instance]}/#{options[:files]}"
   FileUtils.chown options[:app_owner], options[:app_owner], options[:client]
-  FileUtils.chown_R options[:app_owner], options[:app_owner], options[:client] + '/' + options[:instance]
+  FileUtils.chown_R options[:app_owner], options[:app_owner], "#{options[:client]}/#{options[:instance]}"
   begin
     FileUtils.chown_R options[:php_user], options[:app_owner], options[:client] + '/' + options[:instance] +'/' + options[:files] 
   rescue
@@ -108,8 +108,8 @@ def mk_db(options)
   # making MySQL info
   require "sequel"
   random_password = SecureRandom.hex(20)
-  new_db = options[:client] + '_' + options[:instance]
-  print "what is the mysql " + options[:mysql_user] + "'s password? "
+  new_db = "#{options[:client]}_#{options[:instance]}"
+  puts "what is the MySQL #{options[:mysql_user]}'s password? "
   sql_password = gets.chomp
 
   puts "you entered : #{sql_password}"
