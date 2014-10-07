@@ -34,7 +34,7 @@ operations = {
   :mk_db => TRUE,
   :mk_file_system => TRUE,
   :setup_bs => TRUE,
-  :create_vhost => TRUE
+  :mk_vhost => TRUE
 }
 
 parser = OptionParser.new do|opts|
@@ -67,7 +67,7 @@ parser = OptionParser.new do|opts|
   opts.on( "-F", "--no-directory no-directory", "Do not create directory structure") do
     operations[:mk_file_system] = FALSE
   end
-  opts.on( "-B", "--on-beanstalk", "Do not create beanstalk environment.") do 
+  opts.on( "-B", "--no-beanstalk", "Do not create beanstalk environment.") do 
     operations[:setup_bs] = FALSE
   end
   opts.on( "-V", "--no-vhost no-vhost", "Do not create an Nginx virtual host for this application instance.") do
@@ -130,9 +130,12 @@ def mk_db(options)
   puts "password:         #{random_password}"
 end
 
-class Nginx
   def mk_vhost(options)
-       
+
+    File.open("/etc/nginx/sites-enabled/#{options[:cleint]}_#{options[:instance]}", 'w') do |f|
+      f.puts vhost_drupal(options)
+    end
+    system sudo service nginx reload
   end
   def vhost_drupal(options)
     if options[:instance] != "dev" || options[:instance] != "stage"
@@ -162,7 +165,6 @@ class Nginx
   include /etc/nginx/apps/drupal;
 }"
   end
-end
 
 # setting up new role and pulling from beanstalk
 class Bs
@@ -184,5 +186,5 @@ if operations[:mk_db]
 end
 
 if operations[:mk_vhost]
-  Nginx.mk_vhost(options)
+  mk_vhost(options)
 end
